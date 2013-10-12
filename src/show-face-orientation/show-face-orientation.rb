@@ -21,6 +21,7 @@ Usage: Select some model or its individual faces and use right-click context men
 
 # First we pull in the standard API hooks.
 require 'sketchup.rb'
+require 'langhandler.rb'
 
 #
 # This module allows to show/hide orientation of all selected faces. Face
@@ -48,31 +49,31 @@ module JR_ShowFaceOrientation
 	# orientation is shown using different colors for the front side and back
 	# side of the face while storing info about original material of the face.
 	def self.orientation (operation, faces)
-			Sketchup.status_text = "Processing faces..."
-			if operation.eql? "Show"
-				faces.each do |face|
-					frontC = (face.material and face.material.color) ? face.material.color : "default"
-					backC = (face.back_material and face.back_material.color) ? face.back_material.color : "default"
-
-					face.set_attribute "fcOri", "orig_front", frontC
-					face.set_attribute "fcOri", "orig_back", backC
-
-					face.back_material="red"
-					face.material="white"
-				end
-			else
-				faces.each do |face|
-					frontC = face.get_attribute "fcOri", "orig_front"
-					backC = face.get_attribute "fcOri", "orig_back"
-					
-					if frontC && backC # original colors stored
-						face.material = (frontC.eql? "default") ? nil : frontC
-						face.back_material = (backC.eql? "default") ? nil : backC
+		Sketchup.status_text = "Processing faces..."
+		if operation.eql? "Show"
+			faces.each do |face|
+				front = (face.material and face.material.name) ? face.material.name : "default"
+				back = (face.back_material and face.back_material.name) ? face.back_material.name : "default"
 				
-						face.attribute_dictionaries.delete "fcOri"
-					end
+				face.set_attribute "fcOri", "orig_front", front
+				face.set_attribute "fcOri", "orig_back", back
+
+				face.back_material="red"
+				face.material="white"
+			end
+		else
+			faces.each do |face|
+				front = face.get_attribute "fcOri", "orig_front"
+				back = face.get_attribute "fcOri", "orig_back"
+					
+				if front && back # original materials stored
+					face.material = (front.eql? "default") ? nil : front
+					face.back_material = (back.eql? "default") ? nil : back
+				
+					face.attribute_dictionaries.delete "fcOri"
 				end
 			end
+		end
 	end
 
 
@@ -80,6 +81,7 @@ module JR_ShowFaceOrientation
 	#           START            #
 	#----------------------------#
 	unless file_loaded?( __FILE__ )
+		loc = LanguageHandler.new("my.strings")
 		# Right click on anything to see a context menu item
 		UI.add_context_menu_handler do |context_menu|
 			op = "Show" #only if all faces have hidded orientation
@@ -93,13 +95,15 @@ module JR_ShowFaceOrientation
 					break
 				end
 			end
-
-			res = context_menu.add_item(op + " Face Orientation") { self.orientation(op, faces) }
+			
+			res = context_menu.add_item(op + " Face Orientation") {
+				status = Sketchup.active_model.start_operation op + " Face Orientation"
+				self.orientation(op, faces)
+				status = Sketchup.active_model.commit_operation
+				}
 			UI.messagebox "Failed to load Show Face Orientation." if !res
 		end
 		
 		file_loaded( __FILE__ )
 	end
-
- 
 end # of the ShowFaceOrientation module

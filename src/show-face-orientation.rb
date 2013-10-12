@@ -24,10 +24,10 @@ require "sketchup.rb"
 require "extensions.rb"
 
 # Load plugin as extension (so that user can disable it)
-my_plugin_loader = SketchupExtension.new "Show Face Orientation", "show_face_orientation/show_face_orientation.rb"
-my_plugin_loader.copyright= "Copyright (c) 2013, Jan Rus"
-my_plugin_loader.creator= "Jan Rus"
-my_plugin_loader.version = "1.0.1"
-my_plugin_loader.description = "Provides ability to show/hide orientation of all selected faces. Face orientation is represented by different color for the front/back side of each face. It is not necessary to select individual faces, just right-click the model, group of set of faces."
+loader = SketchupExtension.new "Show Face Orientation", "show-face-orientation/show-face-orientation.rb"
+loader.copyright= "Copyright (c) 2013, Jan Rus"
+loader.creator= "Jan Rus"
+loader.version = "1.0.1"
+loader.description = "Provides ability to show/hide orientation of all selected faces. Face orientation is represented by different color for the front/back side of each face. It is not necessary to select individual faces, just right-click the model, group of set of faces."
 
-Sketchup.register_extension my_plugin_loader, true
+Sketchup.register_extension loader, true
